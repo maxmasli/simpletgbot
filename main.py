@@ -8,9 +8,10 @@ API_TOKEN = '7104745433:AAGaytVbeYBo55wBj1g6QdWIZ036zSMFluk'
 
 isSwearsOn = True
 
-swears = ["пидарас", "сука", "уебок", "хуепутало", "гандон", "чмо", "пидр", "гандапляс", "лох", "L", "лохозавр", "уебан", "саси", "дибил", "долбаеб", "даун", "нахуй"]
+swears = ["пидарас", "сука", "уебок", "хуепутало", "гандон", "чмо", "пидр", "гандапляс", "лох", "l", "лохозавр", "уебан", "саси", "дибил", "долбаеб", "даун", "нахуй"]
 obr = ["бот", "ботяра", "ботик"]
 swear_answers = ["пошел нахуй", "ты бля ахуел?", "ты чо сука", "иди ты нахуй пидр", "пиздец блять", "сука саси хуй", "лооох", "ты на кого батон крошиш", "ты ваще долбаеб?", "пиздец ты тупой"]
+good_answer = ["Да, мой повелитель", "Да, отец"]
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -90,9 +91,13 @@ async def handle_reply_to_bot(message: types.Message):
     words = message.text.split(" ")
     hasSwear = False
     for w in words:
-        hasSwear = hasSwear or w in swears
+        hasSwear = hasSwear or w.lower() in swears
     
     if hasSwear:
+        if message.from_user.id == 1161417419:
+            await bot.send_message(message.chat.id, random.choice(good_answer))
+            return
+        
         answer = random.choice(swear_answers)
         await bot.send_message(message.chat.id, answer)
     logger.info(f"User {message.from_user.id} replied to bot's message with: {message.text}")
@@ -106,10 +111,13 @@ async def handle_all_messages(message: types.Message):
     hasObr = False
     hasSwear = False
     for w in words:
-        hasObr = hasObr or w in obr
-        hasSwear = hasSwear or w in swears
+        hasObr = hasObr or w.lower() in obr
+        hasSwear = hasSwear or w.lower() in swears
     
     if hasObr and hasSwear:
+        if message.from_user.id == 1161417419:
+            await bot.send_message(message.chat.id, random.choice(good_answer))
+            return
         answer = random.choice(swear_answers)
         await bot.send_message(message.chat.id, answer)
     logger.info(f"User {message.from_user.id} wrote: {message.text}")
