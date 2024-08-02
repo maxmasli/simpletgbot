@@ -1,8 +1,10 @@
+from datetime import datetime
 import logging
 from aiogram import Bot, Dispatcher, types
 import asyncio
 from aiogram.filters.command import Command
 import random
+import schedule
 
 API_TOKEN = '7104745433:AAGaytVbeYBo55wBj1g6QdWIZ036zSMFluk'
 
@@ -21,10 +23,18 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
+# Array to save chats IDs w/ the bot
+ids = []
+
+# Payment period info
+firstDay = datetime.strptime('2024-07-30', '%Y-%m-%d')
+payingPeriod = 31
+
 # Command /start
 @dp.message(Command("start"))
 async def send_welcome(message: types.Message):
     await message.reply("Здарова! Это бот крутой. Он стоит на сервере который ебать мы покупаем. Используй /help для получения списка команд.")
+    ids.append(message.chat.id)
     logger.info(f"User {message.from_user.id} used /start")
 
 # Command /help
@@ -35,7 +45,8 @@ async def send_help(message: types.Message):
         "/timer <минуты> <комментарий> - отправит комментарий через заданное количество минут.\n"
         "/nahui <имя> - отправляет сообщение 'Иди нахуй <имя>'.\n"
         "/help - показывает этот список команд.\n"
-        "/swear - включает/выключает матерки"
+        "/swear - включает/выключает матерки.\n"
+        "/paytime - отправляет количество дней до очередной оплаты сервера"
     )
     await message.reply(help_text)
     logger.info(f"User {message.from_user.id} used /help")
@@ -59,6 +70,16 @@ async def set_timer(message: types.Message):
         await message.reply("Еблан, укажи корректное количество минут.")
         logger.warning(f"User {message.from_user.id} provided invalid minutes for /timer")
 
+# Function to notify users about payment
+async def rememberToPay():
+    if (datetime.now() - firstDay).days % payingPeriod == 0:
+        for id in ids: await bot.send_message(id, 'Сегодня вроде как нужно заплатить за сервак, расчехляйте свои кошельки и скидывайте бабос на карту Максу, заодно Михе Молодому Миксеру можете накинуть на карту за то, что он ночью нахуй бля сидел и переписывал таймер чтобы ахуенно было. Сколько кидать Михе и Максу, спросите у них сами, бот хз\n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>', parse_mode="html")
+
+# Command /paytime
+@dp.message(Command("paytime"))
+async def send_pay_time(message: types.Message):
+    await bot.send_message(message.chat.id, f"{31 - (datetime.now() - firstDay).days} дней осталось до очередной блядской оплаты сервака.\nЭто неточно, потому что эту хуйню Миша Молодой Миксер писал, он ваще хз когда там надо платить, но вроде мы с Максом все правильно посчитали. \n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>", parse_mode="html")
+
 # Command /nahui
 @dp.message(Command("nahui"))
 async def send_nahui(message: types.Message):
@@ -77,7 +98,7 @@ async def toggle_swear(message: types.Message):
     try:
         isSwearsOn = not isSwearsOn
         await bot.send_message(message.chat.id, "матерки: " + str(isSwearsOn))
-        logger.info(f"User {message.from_user.id} sent 'Иди нахуй' to {name}")
+        # logger.info(f"User {message.from_user.id} sent 'Иди нахуй' to {name}")
     except IndexError:
         await message.reply("Использование: /nahui <имя>")
         logger.warning(f"User {message.from_user.id} used /nahui without providing a name")
@@ -123,6 +144,7 @@ async def handle_all_messages(message: types.Message):
     logger.info(f"User {message.from_user.id} wrote: {message.text}")
 
 async def main():
+    schedule.every().day.at("12:00").do(rememberToPay)
     await dp.start_polling(bot, skip_updates=True)
 
 # Start polling
