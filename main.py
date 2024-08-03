@@ -74,11 +74,18 @@ async def set_timer(message: types.Message):
 async def rememberToPay():
     if (datetime.now() - firstDay).days % payingPeriod == 0:
         for id in ids: await bot.send_message(id, 'Сегодня вроде как нужно заплатить за сервак, расчехляйте свои кошельки и скидывайте бабос на карту Максу, заодно Михе Молодому Миксеру можете накинуть на карту за то, что он ночью нахуй бля сидел и переписывал таймер чтобы ахуенно было. Сколько кидать Михе и Максу, спросите у них сами, бот хз\n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>', parse_mode="html")
+    logger.info(f"Function rememberToPay() was executed")
 
 # Command /paytime
 @dp.message(Command("paytime"))
 async def send_pay_time(message: types.Message):
-    await bot.send_message(message.chat.id, f"{31 - (datetime.now() - firstDay).days} дней осталось до очередной блядской оплаты сервака.\nЭто неточно, потому что эту хуйню Миша Молодой Миксер писал, он ваще хз когда там надо платить, но вроде мы с Максом все правильно посчитали. \n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>", parse_mode="html")
+    daysLeft = str(payingPeriod - (datetime.now() - firstDay).days)
+    correctWords = " "
+    if daysLeft in [i for i in range(2, 5)]: correctWords += "дня осталось"
+    elif daysLeft == 1: correctWords += "день остался"
+    else: correctWords += "дней осталось"
+    await bot.send_message(message.chat.id, f"{daysLeft + correctWords} до очередной блядской оплаты сервака.\n\n<i>Это неточно, потому что эту хуйню Миша Молодой Миксер писал, он ваще хз когда там надо платить, но вроде мы с Максом все правильно посчитали.\n\nTimer handler developed by</i> <b>$$$YungMixer$$$</b>", parse_mode="html")
+    logger.info(f"User {message.from_user.id} used /paytime")
 
 # Command /nahui
 @dp.message(Command("nahui"))
@@ -98,7 +105,7 @@ async def toggle_swear(message: types.Message):
     try:
         isSwearsOn = not isSwearsOn
         await bot.send_message(message.chat.id, "матерки: " + str(isSwearsOn))
-        # logger.info(f"User {message.from_user.id} sent 'Иди нахуй' to {name}")
+        logger.info(f"User {message.from_user.id} turned swear words {'on' if isSwearsOn else 'off'}")
     except IndexError:
         await message.reply("Использование: /nahui <имя>")
         logger.warning(f"User {message.from_user.id} used /nahui without providing a name")
@@ -108,17 +115,17 @@ async def toggle_swear(message: types.Message):
 @dp.message(lambda message: message.reply_to_message and message.reply_to_message.from_user.id == bot.id)
 async def handle_reply_to_bot(message: types.Message):
     if (not isSwearsOn): return
-    
+
     words = message.text.split(" ")
     hasSwear = False
     for w in words:
         hasSwear = hasSwear or w.lower() in swears
-    
+
     if hasSwear:
         if message.from_user.id == 1161417419:
             await bot.send_message(message.chat.id, random.choice(good_answer))
             return
-        
+
         answer = random.choice(swear_answers)
         await bot.send_message(message.chat.id, answer)
     logger.info(f"User {message.from_user.id} replied to bot's message with: {message.text}")
@@ -127,14 +134,14 @@ async def handle_reply_to_bot(message: types.Message):
 @dp.message()
 async def handle_all_messages(message: types.Message):
     if (not isSwearsOn): return
-    
+
     words = message.text.split(" ")
     hasObr = False
     hasSwear = False
     for w in words:
         hasObr = hasObr or w.lower() in obr
         hasSwear = hasSwear or w.lower() in swears
-    
+
     if hasObr and hasSwear:
         if message.from_user.id == 1161417419:
             await bot.send_message(message.chat.id, random.choice(good_answer))
