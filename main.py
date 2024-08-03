@@ -71,20 +71,24 @@ async def set_timer(message: types.Message):
         logger.warning(f"User {message.from_user.id} provided invalid minutes for /timer")
 
 # Function to notify users about payment
-async def rememberToPay():
+async def remember_to_pay():
     if (datetime.now() - firstDay).days % payingPeriod == 0:
-        for id in ids: await bot.send_message(id, 'Сегодня вроде как нужно заплатить за сервак, расчехляйте свои кошельки и скидывайте бабос на карту Максу, заодно Михе Молодому Миксеру можете накинуть на карту за то, что он ночью нахуй бля сидел и переписывал таймер чтобы ахуенно было. Сколько кидать Михе и Максу, спросите у них сами, бот хз\n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>', parse_mode="html")
-    logger.info(f"Function rememberToPay() was executed")
+        for id in ids: 
+            await bot.send_message(id, 'Сегодня вроде как нужно заплатить за сервак, расчехляйте свои кошельки и скидывайте бабос на карту Максу, заодно Михе Молодому Миксеру можете накинуть на карту за то, что он ночью нахуй бля сидел и переписывал таймер чтобы ахуенно было. Сколько кидать Михе и Максу, спросите у них сами, бот хз\n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>', parse_mode="html")
+    logger.info(f"Function remember_to_pay was executed")
 
 # Command /paytime
 @dp.message(Command("paytime"))
 async def send_pay_time(message: types.Message):
     daysLeft = str(payingPeriod - (datetime.now() - firstDay).days)
-    correctWords = " "
-    if daysLeft in [i for i in range(2, 5)]: correctWords += "дня осталось"
-    elif daysLeft == 1: correctWords += "день остался"
-    else: correctWords += "дней осталось"
-    await bot.send_message(message.chat.id, f"{daysLeft + correctWords} до очередной блядской оплаты сервака.\n\n<i>Это неточно, потому что эту хуйню Миша Молодой Миксер писал, он ваще хз когда там надо платить, но вроде мы с Максом все правильно посчитали.\n\nTimer handler developed by</i> <b>$$$YungMixer$$$</b>", parse_mode="html")
+    
+    correctWords = "дней осталось" 
+    if daysLeft in range(2, 5): 
+        correctWords = "дня осталось"
+    elif daysLeft == 1: 
+        correctWords = "день остался"
+        
+    await bot.send_message(message.chat.id, f"{daysLeft} {correctWords} до очередной блядской оплаты сервака.\n\n<i>Это неточно, потому что эту хуйню Миша Молодой Миксер писал, он ваще хз когда там надо платить, но вроде мы с Максом все правильно посчитали.\n\nTimer handler developed by</i> <b>$$$YungMixer$$$</b>\nя ебал того рот", parse_mode="html")
     logger.info(f"User {message.from_user.id} used /paytime")
 
 # Command /nahui
@@ -104,7 +108,7 @@ async def toggle_swear(message: types.Message):
     global isSwearsOn
     try:
         isSwearsOn = not isSwearsOn
-        await bot.send_message(message.chat.id, "матерки: " + str(isSwearsOn))
+        await bot.send_message(message.chat.id, f"матерки {'вкл' if isSwearsOn else 'выкл'}")
         logger.info(f"User {message.from_user.id} turned swear words {'on' if isSwearsOn else 'off'}")
     except IndexError:
         await message.reply("Использование: /nahui <имя>")
@@ -151,7 +155,7 @@ async def handle_all_messages(message: types.Message):
     logger.info(f"User {message.from_user.id} wrote: {message.text}")
 
 async def main():
-    schedule.every().day.at("12:00").do(rememberToPay)
+    schedule.every().day.at("12:00").do(remember_to_pay)
     await dp.start_polling(bot, skip_updates=True)
 
 # Start polling
