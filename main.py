@@ -40,6 +40,9 @@ good_answer = [
     "Ваши слова закон", "Слушаюсь", "С радостью"
 ]
 
+#debt file
+DEBT_FILE = 'debts.txt'
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -71,7 +74,10 @@ async def send_help(message: types.Message):
         "/nahui <имя> - отправляет сообщение 'Иди нахуй <имя>'.\n"
         "/help - показывает этот список команд.\n"
         "/swear - включает/выключает матерки.\n"
-        "/paytime - отправляет количество дней до очередной оплаты сервера"
+        "/paytime - отправляет количество дней до очередной оплаты сервера.\n"
+        "/debt <имя> <сумма> - записывает должок\n"
+        "/debt delete <имя> - удаляет должок\n"
+        "/debt watch - просмотреть долги\n"
     )
     await message.reply(help_text)
     logger.info(f"User {message.from_user.id} used /help")
@@ -139,6 +145,81 @@ async def toggle_swear(message: types.Message):
         await message.reply("Использование: /nahui <имя>")
         logger.warning(f"User {message.from_user.id} used /nahui without providing a name")
 
+# Command /debt
+@dp.message(Command("debt"))
+async def debt(message: types.Message):
+    try:
+        args = message.text.split()
+    
+        if len(args) == 1:
+            await message.reply("Использование:\n/debt <имя> <сумма>\n/debt delete <имя>\n/debt watch")
+            return
+    
+        #delete
+        if args[1] == "delete":
+            if len(args) != 3:
+                await message.reply("Использование:\n/debt <имя> <сумма>\n/debt delete <имя>\n/debt watch")
+                return
+        
+            if message.from_user.id != 1161417419:
+                await message.reply("саси")
+                return
+        
+            name = args[2]
+        
+            debts_list = []
+        
+            with open(DEBT_FILE, 'r') as file:
+                debts_list = file.readlines()
+        
+            with open(DEBT_FILE, 'w') as file:
+                found = False
+                for debt in debts_list:
+                    delete_name = debt.split(" ")[0]
+                    if delete_name == name and not found:
+                        found = True
+                        await message.reply(f"Удалил {name}")
+                    else:
+                        file.write(debt)
+                    
+                if not found:
+                    await message.reply(f"Не нашел {name}")
+            return
+    
+        #watch
+        if args[1] == "watch":
+        
+            if len(args) != 2:
+                await message.reply("Использование:\n/debt <имя> <сумма>\n/debt delete <имя>\n/debt watch")
+                return
+        
+            with open(DEBT_FILE, 'r') as file:
+                debts = file.readlines()
+        
+                reply_text = "Список долгов:\n"
+                for debt in debts:
+                    reply_text += debt
+        
+                await bot.send_message(message.chat.id, reply_text)
+            return
+    
+        #write
+        if len(args) != 3:
+            await message.reply("Использование:\n/debt <имя> <сумма>\n/debt delete <имя>\n/debt watch")
+            return
+    
+        if message.from_user.id != 1161417419:
+            await message.reply("саси")
+            return
+    
+        name = args[1]
+        amount = args[2]
+        
+        with open(DEBT_FILE, 'a') as file:
+            file.write(f'{name} {amount}\n')
+            await message.reply(f"Записал {name} {amount}")
+    except:
+        await message.reply("Что-то не так бля")
 
 
 @dp.message(lambda message: message.reply_to_message and message.reply_to_message.from_user.id == bot.id)
