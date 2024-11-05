@@ -31,13 +31,13 @@ swear_answers = [
     "пиздец блять", "сука саси хуй", "лооох", "ты на кого батон крошишь",
     "ты ваще долбаеб?", "пиздец ты тупой", "слышь, ты, еблан",
     "хочешь, я тебе мозги вправлю?", "да ты конченый", "пшел вон, мудила",
-    "ты вообще нормальный?", "ебаный в рот", "отвали от меня"
+    "ты вообще нормальный?", "ебаный в рот", "отвали от меня", "вы все дети шлюх", "Миха крутой"
 ]
 
 good_answer = [
     "Да, мой повелитель", "Да, отец", "Как скажете", "Конечно, шеф",
     "Да, господин", "Все будет сделано", "Как прикажете",
-    "Ваши слова закон", "Слушаюсь", "С радостью"
+    "Ваши слова закон", "Слушаюсь", "С радостью", "Миха крутой"
 ]
 
 #debt file
@@ -57,6 +57,9 @@ ids = []
 # Payment period info
 firstDay = datetime.strptime('2024-07-30', '%Y-%m-%d')
 payingPeriod = 31
+
+# def log(msg):
+#     logger.info(msg)
 
 # Command /start
 @dp.message(Command("start"))
@@ -103,7 +106,7 @@ async def set_timer(message: types.Message):
 
 # Function to notify users about payment
 async def remember_to_pay():
-    if (datetime.now() - firstDay).days % payingPeriod == 0:
+    if payingPeriod - (datetime.now() - firstDay).days % payingPeriod == 0:
         for id in ids: 
             await bot.send_message(id, 'Сегодня вроде как нужно заплатить за сервак, расчехляйте свои кошельки и скидывайте бабос на карту Максу, заодно Михе Молодому Миксеру можете накинуть на карту за то, что он ночью нахуй бля сидел и переписывал таймер чтобы ахуенно было. Сколько кидать Михе и Максу, спросите у них сами, бот хз\n\n<i>Timer handler developed by</i> <b>$$$YungMixer$$$</b>', parse_mode="html")
     logger.info(f"Function remember_to_pay was executed")
@@ -111,7 +114,7 @@ async def remember_to_pay():
 # Command /paytime
 @dp.message(Command("paytime"))
 async def send_pay_time(message: types.Message):
-    daysLeft = str(payingPeriod - (datetime.now() - firstDay).days)
+    daysLeft = payingPeriod - (datetime.now() - firstDay).days % payingPeriod
     
     correctWords = "дней осталось" 
     if daysLeft in range(2, 5): 
@@ -119,7 +122,7 @@ async def send_pay_time(message: types.Message):
     elif daysLeft == 1: 
         correctWords = "день остался"
         
-    await bot.send_message(message.chat.id, f"{daysLeft} {correctWords} до очередной блядской оплаты сервака.\n\n<i>Это неточно, потому что эту хуйню Миша Молодой Миксер писал, он ваще хз когда там надо платить, но вроде мы с Максом все правильно посчитали.\n\nTimer handler developed by</i> <b>$$$YungMixer$$$</b>\nя ебал того рот", parse_mode="html")
+    await bot.send_message(message.chat.id, f"{daysLeft} {correctWords} до очередной блядской оплаты сервака.\n\n<i>Эту хуйню Миша Молодой Миксер писал, накиньте ему респектов.\n\nTimer handler developed by</i> <b>$$$YungMixer$$$</b>", parse_mode="html")
     logger.info(f"User {message.from_user.id} used /paytime")
 
 # Command /nahui
